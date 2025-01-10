@@ -101,6 +101,140 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(new_product.available, product.available)
         self.assertEqual(new_product.category, product.category)
 
-    #
-    # ADD YOUR TEST CASES HERE
-    #
+    def test_read_a_product(self):
+        """Test function to read a product"""
+        product = ProductFactory()
+        product.id = None
+        product.create()
+        # Assert that it was assigned an id
+        self.assertIsNotNone(product.id)
+        # Fetch product from Database
+        found_product = Product.find(product.id)
+        # Assert matching properties such as id, name, description, price
+        self.assertEqual(found_product.id, product.id)
+        self.assertEqual(found_product.name, product.name)
+        self.assertEqual(found_product.description, product.description)
+        self.assertEqual(found_product.price, product.price)
+
+    def test_update_a_product(self):
+        """Test function to update a Product"""
+        product = ProductFactory()
+        product.id = None
+        product.create()
+        # Assert that it was assigned an id
+        self.assertIsNotNone(product.id)
+        # Change product description
+        description = "New description"
+        product.description = description
+        original_id = product.id
+        product.update()
+        self.assertEqual(product.id, original_id)
+        self.assertEqual(product.description, description)
+        # Fetch all product and check updates
+        products_all = Product.all()
+        self.assertEqual(len(products_all), 1)
+        self.assertEqual(products_all[0].id, original_id)
+        self.assertEqual(products_all[0].description, description)
+        # Test error thrown when updating a product with empty description
+        product.id = None
+        with self.assertRaises(Exception):
+            product.update()
+
+    def test_delete_a_product(self):
+        """Test function to delete a Product"""
+        product = ProductFactory()
+        product.create()
+        # Assert there is only a single product in the database
+        self.assertEqual(len(Product.all()), 1)
+        # Delete product and assert there is 0 products in db
+        product.delete()
+        self.assertEqual(len(Product.all()), 0)
+
+    def test_list_all_products(self):
+        """Test function to list all Products in database"""
+        products = Product.all()
+        # Assert there are no products in database
+        self.assertEqual(products, [])
+        # Create 5 products
+        for _ in range(5):
+            product = ProductFactory()
+            product.create()
+        # Assert there are 5 products in database
+        products = Product.all()
+        self.assertEqual(len(products), 5)
+
+    def test_find_by_name(self):
+        """Test function to find a product by name"""
+        # Create 5 products
+        products = ProductFactory.create_batch(5)
+        for product in products:
+            product.create()
+        # Name of first product
+        name = products[0].name
+        # Check how many products have the same name
+        count = len([product for product in products if product.name == name])
+        # Use the name to retrieve from database
+        found = Product.find_by_name(name)
+        # Assert nb. of product with same name is equal to nb. of products
+        # retrieved from database
+        self.assertEqual(found.count(), count)
+        # Assert name of retrieved products is same
+        for product in found:
+            self.assertEqual(product.name, name)
+
+    def test_find_by_price(self):
+        """Test function to find a product by price"""
+        # Create 10 products
+        products = ProductFactory.create_batch(10)
+        for product in products:
+            product.create()
+        # Price of first product
+        price = products[0].price
+        # Check how many products have the same price
+        count = len([product for product in products if product.price == price])
+        # Retrieve products with same price
+        found = Product.find_by_price(price)
+        # Assert nb. of product with same price is equal to nb. of products
+        # retrieved from database
+        self.assertEqual(found.count(), count)
+        # Assert price of retrieved products is same
+        for product in found:
+            self.assertEqual(product.price, price)
+
+    def test_find_by_availability(self):
+        """Test function to find a product by availability"""
+        # Create 10 products
+        products = ProductFactory.create_batch(10)
+        for product in products:
+            product.create()
+        # Availability of first product
+        available = products[0].available
+        # Check how many products have the same availability
+        count = len([product for product in products if product.available == available])
+        # Retrieve products with same availability
+        found = Product.find_by_availability(available)
+        # Assert nb. of product with same availability is equal to nb. of products
+        # retrieved from database
+        self.assertEqual(found.count(), count)
+        # Assert availability of retrieved products is same
+        for product in found:
+            self.assertEqual(product.available, available)
+
+    def test_find_by_category(self):
+        """Test function to find a product by category"""
+        # Create 10 products
+        products = ProductFactory.create_batch(10)
+        for product in products:
+            product.create()
+        # Category of first product
+        category = products[0].category
+        # Check how many products have the same category
+        count = len([product for product in products if product.category == category])
+        # Retrieve products with same category
+        found = Product.find_by_category(category)
+        # Assert nb. of product with same category is equal to nb. of products
+        # retrieved from database
+        self.assertEqual(found.count(), count)
+        # Assert category of retrieved products is same
+        for product in found:
+            self.assertEqual(product.category, category)
